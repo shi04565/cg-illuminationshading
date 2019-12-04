@@ -13,6 +13,5 @@ out vec4 FragColor;
 
 void main() {
     FragColor = vec4(ambient, 1.0)*vec4(material_color, 1.0) + vec4(diffuse, 1.0)*vec4(material_color, 1.0) + vec4(specular, 1.0)*vec4(material_specular, 1.0);
-	//FragColor = vec4(ambient, 1.0)*vec4(material_color, 1.0)+vec4(diffuse, 1.0)*vec4(material_color, 1.0);
-
+	
 }

@@ -64,12 +64,12 @@ class GlApp {
 
     InitializeTexture(image_url) {
         // create a texture, and upload a temporary 1px white RGBA array [255,255,255,255]
-	var white =  [255,255,255,255];
-        let texture = gl.createTexture();
-	gl.bindTexture(gl.TEXTURE_2D, texture);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-	gl.texImage2D(gl.TEXTURE_2D, 0,gl.RGBA, 1, 1, 0,gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(white));
-	gl.bindTexture(gl.TEXTURE_2D, null);
+		var white =  [255,255,255,255];
+		let texture = this.gl.createTexture();
+		this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+		this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
+		this.gl.texImage2D(this.gl.TEXTURE_2D, 0,this.gl.RGBA, 1, 1, 0,this.gl.RGBA, this.gl.UNSIGNED_BYTE, new Uint8Array(white));
+		this.gl.bindTexture(this.gl.TEXTURE_2D, null);
 
         // load the actual image
         let image = new Image();
@@ -78,13 +78,15 @@ class GlApp {
             this.UpdateTexture(texture, image);
         }, false);
         image.src = image_url;
+		return texture;
     }
 
     UpdateTexture(texture, image_element) {
-		gl.bindTexture(gl.TEXTURE_2D, texture);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,gl.UNSIGNED_BYTE, image_element);
-		gl.generateMipmap(gl.TEXTURE_2D);
-		gl.bindTexture(gl.TEXTURE_2D, null);
+		this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+		this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA,this.gl.UNSIGNED_BYTE, image_element);
+		this.gl.generateMipmap(this.gl.TEXTURE_2D);
+		this.gl.bindTexture(this.gl.TEXTURE_2D, null);
+		this.Render();
     }
 
     Render() {
@@ -92,63 +94,109 @@ class GlApp {
         
         // draw all models --> note you need to properly select shader here
         for (let i = 0; i < this.scene.models.length; i ++) {
-			if(this.scene.models[i].shader === 'color'){
-				this.gl.useProgram(this.shader['gouraud_color'].program);
+			if(this.algorithm==='gouraud'&&this.scene.models[i].shader === 'color'){
+				//console.log('drawmodel - gc', i);
+				// gouraud
+				this.gl.useProgram(this.shader[this.algorithm+"_"+this.scene.models[i].shader].program);
 				glMatrix.mat4.identity(this.model_matrix);
 				glMatrix.mat4.translate(this.model_matrix, this.model_matrix, this.scene.models[i].center);
 				glMatrix.mat4.scale(this.model_matrix, this.model_matrix, this.scene.models[i].size);
-				this.gl.uniform3fv(this.shader['gouraud_color'].uniform.material_col, this.scene.models[i].material.color);
-				this.gl.uniformMatrix4fv(this.shader['gouraud_color'].uniform.projection, false, this.projection_matrix);
-				this.gl.uniformMatrix4fv(this.shader['gouraud_color'].uniform.view, false, this.view_matrix);
-				this.gl.uniformMatrix4fv(this.shader['gouraud_color'].uniform.model, false, this.model_matrix);
-				this.gl.uniform3fv(this.shader['gouraud_color'].uniform.light_ambient, this.scene.light.ambient);
-				
-				this.gl.uniform3fv(this.shader['gouraud_color'].uniform.light_col, this.scene.light.point_lights[0].color);
-				this.gl.uniform3fv(this.shader['gouraud_color'].uniform.light_pos, this.scene.light.point_lights[0].position);
-				this.gl.uniform1f(this.shader['gouraud_color'].uniform.shininess, this.scene.models[i].material.shininess);
-				this.gl.uniform3fv(this.shader['gouraud_color'].uniform.camera_pos, this.scene.camera.position);
-			}else{
-				
-				this.gl.useProgram(this.shader['gouraud_texture'].program);
+				this.gl.uniform3fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.material_col, this.scene.models[i].material.color);
+				this.gl.uniform3fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.material_spec, this.scene.models[i].material.specular);
+
+				this.gl.uniformMatrix4fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.projection, false, this.projection_matrix);
+				this.gl.uniformMatrix4fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.view, false, this.view_matrix);
+				this.gl.uniformMatrix4fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.model, false, this.model_matrix);
+				this.gl.uniform3fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.light_ambient, this.scene.light.ambient);
+			
+				this.gl.uniform1f(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.shininess, this.scene.models[i].material.shininess);
+				this.gl.uniform3fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.camera_pos, this.scene.camera.position);
+				this.gl.uniform1i(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.light_number, this.scene.light.point_lights.length);//new light numbers
+				// phong
+			} else if (this.algorithm==='phong'&&this.scene.models[i].shader === 'color') {
+				this.gl.useProgram(this.shader[this.algorithm+"_"+this.scene.models[i].shader].program);
 				glMatrix.mat4.identity(this.model_matrix);
 				glMatrix.mat4.translate(this.model_matrix, this.model_matrix, this.scene.models[i].center);
 				glMatrix.mat4.scale(this.model_matrix, this.model_matrix, this.scene.models[i].size);
-				//texture 
-				this.gl.uniform3fv(this.shader['gouraud_texture'].uniform.material_col, this.scene.models[i].material.color);
-				this.gl.uniformMatrix4fv(this.shader['gouraud_texture'].uniform.projection, false, this.projection_matrix);
-				this.gl.uniformMatrix4fv(this.shader['gouraud_texture'].uniform.view, false, this.view_matrix);
-				this.gl.uniformMatrix4fv(this.shader['gouraud_texture'].uniform.model, false, this.model_matrix);
-				this.gl.uniform3fv(this.shader['gouraud_texture'].uniform.light_ambient, this.scene.light.ambient);
+				this.gl.uniform3fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.material_col, this.scene.models[i].material.color);
+				this.gl.uniform3fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.material_spec, this.scene.models[i].material.specular);
+
+				this.gl.uniformMatrix4fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.projection, false, this.projection_matrix);
+				this.gl.uniformMatrix4fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.view, false, this.view_matrix);
+				this.gl.uniformMatrix4fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.model, false, this.model_matrix);
+				this.gl.uniform3fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.light_ambient, this.scene.light.ambient);
+			
+				this.gl.uniform1f(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.shininess, this.scene.models[i].material.shininess);
+				this.gl.uniform3fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.camera_pos, this.scene.camera.position);
+			
+			}else if (this.algorithm==='gouraud'&&this.scene.models[i].shader === 'texture'){
+				//console.log('drawmodel - other', i);
+
+				this.gl.useProgram(this.shader[this.algorithm+"_"+this.scene.models[i].shader].program);
+				glMatrix.mat4.identity(this.model_matrix);
+				glMatrix.mat4.translate(this.model_matrix, this.model_matrix, this.scene.models[i].center);
+				glMatrix.mat4.scale(this.model_matrix, this.model_matrix, this.scene.models[i].size);
+				// texture
+				// gouraud
+				this.gl.uniform3fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.material_col, this.scene.models[i].material.color);
+				this.gl.uniformMatrix4fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.projection, false, this.projection_matrix);
+				this.gl.uniformMatrix4fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.view, false, this.view_matrix);
+				this.gl.uniformMatrix4fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.model, false, this.model_matrix);
+				this.gl.uniform3fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.light_ambient, this.scene.light.ambient);
 				
-				this.gl.uniform3fv(this.shader['gouraud_texture'].uniform.light_col, this.scene.light.point_lights[0].color);
-				this.gl.uniform3fv(this.shader['gouraud_texture'].uniform.light_pos, this.scene.light.point_lights[0].position);
-				this.gl.uniform1f(this.shader['gouraud_texture'].uniform.shininess, this.scene.models[i].material.shininess);
-				this.gl.uniform3fv(this.shader['gouraud_texture'].uniform.camera_pos, this.scene.camera.position);
-				this.gl.uniform3fv(this.shader['gouraud_texture'].uniform.image, this.scene.camera.position);
-				this.gl.uniform3fv(this.shader['gouraud_texture'].uniform.tex_scale, this.scene.camera.position);
+				this.gl.uniform1f(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.shininess, this.scene.models[i].material.shininess);
+				this.gl.uniform3fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.camera_pos, this.scene.camera.position);
+				
+				this.gl.uniform2fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.tex_scale, this.scene.models[i].texture.scale);
+				
+				this.gl.activeTexture(this.gl.TEXTURE0);
+				this.gl.bindTexture(this.gl.TEXTURE_2D, this.scene.models[i].texture.id);
+				this.gl.uniform1i(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.image, 0);
+				// phong
+			}else if (this.algorithm==='phong'&&this.scene.models[i].shader === 'texture'){
+				this.gl.useProgram(this.shader[this.algorithm+"_"+this.scene.models[i].shader].program);
+				glMatrix.mat4.identity(this.model_matrix);
+				glMatrix.mat4.translate(this.model_matrix, this.model_matrix, this.scene.models[i].center);
+				glMatrix.mat4.scale(this.model_matrix, this.model_matrix, this.scene.models[i].size);
+				// texture
+				// gouraud
+				this.gl.uniform3fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.material_col, this.scene.models[i].material.color);
+				this.gl.uniformMatrix4fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.projection, false, this.projection_matrix);
+				this.gl.uniformMatrix4fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.view, false, this.view_matrix);
+				this.gl.uniformMatrix4fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.model, false, this.model_matrix);
+				this.gl.uniform3fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.light_ambient, this.scene.light.ambient);
+				
+				this.gl.uniform1f(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.shininess, this.scene.models[i].material.shininess);
+				this.gl.uniform3fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.camera_pos, this.scene.camera.position);
+				
+				this.gl.uniform2fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.tex_scale, this.scene.models[i].texture.scale);
+				
+				this.gl.activeTexture(this.gl.TEXTURE0);
+				this.gl.bindTexture(this.gl.TEXTURE_2D, this.scene.models[i].texture.id);
+				this.gl.uniform1i(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.image, 0);
 			}
 			
-
-
             this.gl.bindVertexArray(this.vertex_array[this.scene.models[i].type]);
             this.gl.drawElements(this.gl.TRIANGLES, this.vertex_array[this.scene.models[i].type].face_index_count, this.gl.UNSIGNED_SHORT, 0);
             this.gl.bindVertexArray(null);
         }
 
         // draw all light sources
-        for (let i = 0; i < this.scene.light.point_lights.length; i ++) {
-            this.gl.useProgram(this.shader['emissive'].program);
+        for (let i = 0; i < this.scene.light.point_lights.length; i++) {
+            this.gl.useProgram(this.shader[this.algorithm+"_"+this.scene.models[i].shader].program);
 
             glMatrix.mat4.identity(this.model_matrix);
             glMatrix.mat4.translate(this.model_matrix, this.model_matrix, this.scene.light.point_lights[i].position);
             glMatrix.mat4.scale(this.model_matrix, this.model_matrix, glMatrix.vec3.fromValues(0.1, 0.1, 0.1));
 
 
-            this.gl.uniform3fv(this.shader['emissive'].uniform.material, this.scene.light.point_lights[i].color);
-            this.gl.uniformMatrix4fv(this.shader['emissive'].uniform.projection, false, this.projection_matrix);
-            this.gl.uniformMatrix4fv(this.shader['emissive'].uniform.view, false, this.view_matrix);
-            this.gl.uniformMatrix4fv(this.shader['emissive'].uniform.model, false, this.model_matrix);
-
+            this.gl.uniform3fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.material, this.scene.light.point_lights[i].color);
+            this.gl.uniformMatrix4fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.projection, false, this.projection_matrix);
+            this.gl.uniformMatrix4fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.view, false, this.view_matrix);
+            this.gl.uniformMatrix4fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.model, false, this.model_matrix);
+			this.gl.uniform3fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.light_col, this.scene.light.point_lights[i].color);
+			this.gl.uniform3fv(this.shader[this.algorithm+"_"+this.scene.models[i].shader].uniform.light_pos, this.scene.light.point_lights[i].position);
+			
             this.gl.bindVertexArray(this.vertex_array['sphere']);
             this.gl.drawElements(this.gl.TRIANGLES, this.vertex_array['sphere'].face_index_count, this.gl.UNSIGNED_SHORT, 0);
             this.gl.bindVertexArray(null);
@@ -224,7 +272,8 @@ class GlApp {
         let projection_uniform = this.gl.getUniformLocation(program, 'projection_matrix');
         let view_uniform = this.gl.getUniformLocation(program, 'view_matrix');
         let model_uniform = this.gl.getUniformLocation(program, 'model_matrix');
-
+		let light_num_uniform = this.gl.getUniformLocation(program, 'light_number');
+		
         this.shader[program_name] = {
             program: program,
             uniform: {
@@ -237,7 +286,9 @@ class GlApp {
                 shininess: shininess_uniform,
                 projection: projection_uniform,
                 view: view_uniform,
-                model: model_uniform
+                model: model_uniform,
+				light_number: light_num_uniform 
+				
             }
         };
     }

@@ -2,9 +2,8 @@
 
 precision mediump float;
 
-in vec3 ambient;
-in vec3 diffuse;
-in vec3 specular;
+in vec3 frag_pos;
+in vec3 frag_normal;
 in vec2 frag_texcoord;
 
 uniform vec3 light_ambient;
@@ -19,5 +18,16 @@ uniform sampler2D image;          // use in conjunction with Ka and Kd
 out vec4 FragColor;
 
 void main() {
-    FragColor = vec4(material_color, 1.0) * texture(image, frag_texcoord);
+	vec3 ambient = light_ambient;
+
+	vec3 diffuse = light_color*clamp(dot(frag_normal,normalize(light_position-frag_pos)),0.0,1.0);
+
+	vec3 reflect_light = reflect(-normalize(light_position-frag_pos),frag_normal);
+	vec3 view = normalize(camera_position-frag_pos);
+	vec3 specular = light_color*pow(clamp(dot(reflect_light,view),0.0,1.0),material_shininess);
+	
+	
+	
+	
+    FragColor = texture(image, frag_texcoord)+vec4(ambient, 1.0)*vec4(material_color, 1.0) + vec4(diffuse, 1.0)*vec4(material_color, 1.0) + vec4(specular, 1.0)*vec4(material_specular, 1.0);
 }
