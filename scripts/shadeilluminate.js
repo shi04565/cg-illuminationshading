@@ -64,7 +64,12 @@ class GlApp {
 
     InitializeTexture(image_url) {
         // create a texture, and upload a temporary 1px white RGBA array [255,255,255,255]
-        let texture;
+	var white =  [255,255,255,255];
+        let texture = gl.createTexture();
+	gl.bindTexture(gl.TEXTURE_2D, texture);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+	gl.texImage2D(gl.TEXTURE_2D, 0,gl.RGBA, 1, 1, 0,gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(white));
+	gl.bindTexture(gl.TEXTURE_2D, null);
 
         // load the actual image
         let image = new Image();
@@ -76,7 +81,10 @@ class GlApp {
     }
 
     UpdateTexture(texture, image_element) {
-
+		gl.bindTexture(gl.TEXTURE_2D, texture);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,gl.UNSIGNED_BYTE, image_element);
+		gl.generateMipmap(gl.TEXTURE_2D);
+		gl.bindTexture(gl.TEXTURE_2D, null);
     }
 
     Render() {
@@ -84,16 +92,43 @@ class GlApp {
         
         // draw all models --> note you need to properly select shader here
         for (let i = 0; i < this.scene.models.length; i ++) {
-            this.gl.useProgram(this.shader['emissive'].program);
+			if(this.scene.models[i].shader === 'color'){
+				this.gl.useProgram(this.shader['gouraud_color'].program);
+				glMatrix.mat4.identity(this.model_matrix);
+				glMatrix.mat4.translate(this.model_matrix, this.model_matrix, this.scene.models[i].center);
+				glMatrix.mat4.scale(this.model_matrix, this.model_matrix, this.scene.models[i].size);
+				this.gl.uniform3fv(this.shader['gouraud_color'].uniform.material_col, this.scene.models[i].material.color);
+				this.gl.uniformMatrix4fv(this.shader['gouraud_color'].uniform.projection, false, this.projection_matrix);
+				this.gl.uniformMatrix4fv(this.shader['gouraud_color'].uniform.view, false, this.view_matrix);
+				this.gl.uniformMatrix4fv(this.shader['gouraud_color'].uniform.model, false, this.model_matrix);
+				this.gl.uniform3fv(this.shader['gouraud_color'].uniform.light_ambient, this.scene.light.ambient);
+				
+				this.gl.uniform3fv(this.shader['gouraud_color'].uniform.light_col, this.scene.light.point_lights[0].color);
+				this.gl.uniform3fv(this.shader['gouraud_color'].uniform.light_pos, this.scene.light.point_lights[0].position);
+				this.gl.uniform1f(this.shader['gouraud_color'].uniform.shininess, this.scene.models[i].material.shininess);
+				this.gl.uniform3fv(this.shader['gouraud_color'].uniform.camera_pos, this.scene.camera.position);
+			}else{
+				
+				this.gl.useProgram(this.shader['gouraud_texture'].program);
+				glMatrix.mat4.identity(this.model_matrix);
+				glMatrix.mat4.translate(this.model_matrix, this.model_matrix, this.scene.models[i].center);
+				glMatrix.mat4.scale(this.model_matrix, this.model_matrix, this.scene.models[i].size);
+				//texture 
+				this.gl.uniform3fv(this.shader['gouraud_texture'].uniform.material_col, this.scene.models[i].material.color);
+				this.gl.uniformMatrix4fv(this.shader['gouraud_texture'].uniform.projection, false, this.projection_matrix);
+				this.gl.uniformMatrix4fv(this.shader['gouraud_texture'].uniform.view, false, this.view_matrix);
+				this.gl.uniformMatrix4fv(this.shader['gouraud_texture'].uniform.model, false, this.model_matrix);
+				this.gl.uniform3fv(this.shader['gouraud_texture'].uniform.light_ambient, this.scene.light.ambient);
+				
+				this.gl.uniform3fv(this.shader['gouraud_texture'].uniform.light_col, this.scene.light.point_lights[0].color);
+				this.gl.uniform3fv(this.shader['gouraud_texture'].uniform.light_pos, this.scene.light.point_lights[0].position);
+				this.gl.uniform1f(this.shader['gouraud_texture'].uniform.shininess, this.scene.models[i].material.shininess);
+				this.gl.uniform3fv(this.shader['gouraud_texture'].uniform.camera_pos, this.scene.camera.position);
+				this.gl.uniform3fv(this.shader['gouraud_texture'].uniform.image, this.scene.camera.position);
+				this.gl.uniform3fv(this.shader['gouraud_texture'].uniform.tex_scale, this.scene.camera.position);
+			}
+			
 
-            glMatrix.mat4.identity(this.model_matrix);
-            glMatrix.mat4.translate(this.model_matrix, this.model_matrix, this.scene.models[i].center);
-            glMatrix.mat4.scale(this.model_matrix, this.model_matrix, this.scene.models[i].size);
-
-            this.gl.uniform3fv(this.shader['emissive'].uniform.material, this.scene.models[i].material.color);
-            this.gl.uniformMatrix4fv(this.shader['emissive'].uniform.projection, false, this.projection_matrix);
-            this.gl.uniformMatrix4fv(this.shader['emissive'].uniform.view, false, this.view_matrix);
-            this.gl.uniformMatrix4fv(this.shader['emissive'].uniform.model, false, this.model_matrix);
 
             this.gl.bindVertexArray(this.vertex_array[this.scene.models[i].type]);
             this.gl.drawElements(this.gl.TRIANGLES, this.vertex_array[this.scene.models[i].type].face_index_count, this.gl.UNSIGNED_SHORT, 0);

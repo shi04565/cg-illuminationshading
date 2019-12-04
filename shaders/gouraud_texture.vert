@@ -24,4 +24,11 @@ out vec2 frag_texcoord;
 void main() {
     gl_Position = projection_matrix * view_matrix * model_matrix * vec4(vertex_position, 1.0);
     frag_texcoord = vertex_texcoord * texture_scale;
+	
+	ambient = light_ambient;
+	diffuse = light_color*(vertex_normal*(light_position-vertex_position));
+	
+	
+	
+	
 }
