@@ -1,0 +1,157 @@
+{
+    "camera": {
+        "position": [0.0, 8.5, 0.0],
+        "direction": [0.0, -1.0, 0.0],
+        "up": [-1.0, 0.0, 0.0]
+    },
+    "models": [
+        {
+            "type": "plane",
+            "shader": "texture",
+            "material": {
+                "color": [0.5,0.5,0.5],
+                "specular": [0.0, 0.0, 0.0],
+                "shininess": 3
+            },
+            "texture": {
+                "url": "images/8k_stars_milky_way.jpg",
+                "scale": [1 ,2]
+            },
+            "center": [0.0, 0.0, 0.0],
+            "size": [40.0,1.0,60.0]
+        },
+        {
+            "type": "sphere",
+            "shader": "texture",
+            "material": {
+                "color": [0.5,0.5,0.5],
+                "specular": [0.8,0.8,0.8],
+                "shininess": 10
+            },
+            "texture": {
+                "url": "images/2k_mercury.jpg",
+                "scale": [1, 1]
+            },
+            "center": [1.1,1.1,1.9],
+            "size": [0.5,0.5,0.5]
+        },
+        {
+            "type": "sphere",
+            "shader": "texture",
+            "material": {
+                "color": [0.5,0.5,0.5],
+                "specular": [0.8,0.8,0.8],
+                "shininess": 10
+            },
+            "texture": {
+                "url": "images/2k_venus_surface.jpg",
+                "scale": [1, 1]
+            },
+            "center": [-1.9,1.1,-1.9],
+            "size": [0.9,0.9,0.9]
+        },
+        {
+            "type": "sphere",
+            "shader": "texture",
+            "material": {
+                "color": [0.5,0.5,0.5],
+                "specular": [0.8,0.8,0.8],
+                "shininess": 10
+            },
+            "texture": {
+                "url": "images/8k_earth_daymap.jpg",
+                "scale": [1, 1]
+            },
+            "center": [-2,1.1,4.3],
+            "size": [1.0,1.0,1.0]
+        },
+        {
+            "type": "sphere",
+            "shader": "texture",
+            "material": {
+                "color": [0.5,0.5,0.5],
+                "specular": [0.8,0.8,0.8],
+                "shininess": 10
+            },
+            "texture": {
+                "url": "images/2k_mars.jpg",
+                "scale": [1, 1]
+            },
+            "center": [3.4,1.1,-3.2],
+            "size": [0.6,0.6,0.6]
+        },
+        {
+            "type": "sphere",
+            "shader": "texture",
+            "material": {
+                "color": [0.5,0.5,0.5],
+                "specular": [0.8,0.8,0.8],
+                "shininess": 10
+            },
+            "texture": {
+                "url": "images/2k_jupiter.jpg",
+                "scale": [1, 1]
+            },
+            "center": [7.1,1.1,-7.4],
+            "size": [3.4,3.4,3.4]
+        },
+        {
+            "type": "sphere",
+            "shader": "texture",
+            "material": {
+                "color": [0.5,0.5,0.5],
+                "specular": [0.8,0.8,0.8],
+                "shininess": 10
+            },
+            "texture": {
+                "url": "images/2k_saturn.jpg",
+                "scale": [1, 1]
+            },
+            "center": [-5.0,1.1,8.6],
+            "size": [3.2,3.2,3.2]
+        },
+        {
+            "type": "sphere",
+            "shader": "texture",
+            "material": {
+                "color": [0.5,0.5,0.5],
+                "specular": [0.8,0.8,0.8],
+                "shininess": 10
+            },
+            "texture": {
+                "url": "images/2k_uranus.jpg",
+                "scale": [1, 1]
+            },
+            "center": [7.4,1.1,11.0],
+            "size": [1.7,1.7,1.7]
+        },
+        {
+            "type": "sphere",
+            "shader": "texture",
+            "material": {
+                "color": [0.5,0.5,0.5],
+                "specular": [0.8,0.8,0.8],
+                "shininess": 10
+            },
+            "texture": {
+                "url": "images/2k_neptune.jpg",
+                "scale": [1, 1]
+            },
+            "center": [-7.7,1.1,-12],
+            "size": [1.7,1.7,1.7]
+        }
+    ],
+    "light": {
+        "ambient": [0.15, 0.15, 0.15],
+        "point_lights": [
+            {
+                "position": [0.0,1.1,0.3],
+                "color": [0.99,0.37,0.21]
+            },
+            {
+                "position": [0.0,1.1,0.3],
+                "color": [0.98,0.85,0.33]
+            }
+        ]
+    }
+}

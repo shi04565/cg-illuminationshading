@@ -20,5 +20,4 @@ void main() {
 	
 	frag_normal = normalize(inverse(transpose(mat3(model_matrix)))*vertex_normal);
 
-	
 }
